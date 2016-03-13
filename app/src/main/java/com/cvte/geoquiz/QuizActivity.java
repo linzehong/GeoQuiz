@@ -13,6 +13,8 @@ public class QuizActivity extends AppCompatActivity {
 
     private static final String TAG = "QuizActivity";
     private static final String KEY_INDEX = "index";
+    private static final String CHEAT_FLAG = "cheat_flag";
+    private static final int REQUEST_CODE = 0;
 
     private TextView mQuestionTextView;
     private Button mTrueButton;
@@ -38,6 +40,10 @@ public class QuizActivity extends AppCompatActivity {
 
         if (savedInstanceState != null) {
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX);
+            boolean[] cheatFlags = savedInstanceState.getBooleanArray(CHEAT_FLAG);
+            for (int i = 0; i < cheatFlags.length; ++i) {
+                mQuestionBank[i].setIsCheated(cheatFlags[i]);
+            }
         }
 
         mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
@@ -89,7 +95,7 @@ public class QuizActivity extends AppCompatActivity {
                 Intent i = new Intent(QuizActivity.this, CheatActivity.class);
                 boolean answerIsTrue = mQuestionBank[mCurrentIndex].isTrueQuestion();
                 i.putExtra(CheatActivity.EXTRA_ANSWER_IS_TRUE, answerIsTrue);
-                startActivity(i);
+                startActivityForResult(i, REQUEST_CODE);
             }
         });
     }
@@ -119,11 +125,11 @@ public class QuizActivity extends AppCompatActivity {
         boolean answerIsTrue = mQuestionBank[mCurrentIndex].isTrueQuestion();
 
         int messageResId = 0;
-        if (userPressedTrue == answerIsTrue) {
-            messageResId = R.string.correct_toast;
-        }
-        else {
-            messageResId = R.string.incorrect_toast;
+        if (mQuestionBank[mCurrentIndex].isIsCheated()) {
+            messageResId = R.string.judgment_toast;
+        } else {
+            messageResId = (userPressedTrue == answerIsTrue)
+                ? (R.string.correct_toast) : (R.string.incorrect_toast);
         }
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
     }
@@ -132,5 +138,23 @@ public class QuizActivity extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(KEY_INDEX, mCurrentIndex);
+        int length = mQuestionBank.length;
+        boolean[] cheatFlags = new boolean[length];
+        for (int i = 0; i < length; ++i) {
+            cheatFlags[i] = mQuestionBank[i].isIsCheated();
+        }
+        outState.putBooleanArray(CHEAT_FLAG, cheatFlags);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (data == null) {
+            return;
+        }
+        boolean isCheater = data.getBooleanExtra(CheatActivity.EXTRA_ANSWER_SHOWN, false);
+
+        if (isCheater) {
+            mQuestionBank[mCurrentIndex].setIsCheated(isCheater);
+        }
     }
 }

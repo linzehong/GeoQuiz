@@ -7,10 +7,12 @@ public class TrueFalse {
 
     private int mQuestion;
     private boolean mTrueQuestion;
+    private boolean mIsCheated;
 
     public TrueFalse(int question, boolean trueQuestion) {
         mQuestion = question;
         mTrueQuestion = trueQuestion;
+        mIsCheated = false;
     }
 
     public int getQuestion() {
@@ -27,5 +29,13 @@ public class TrueFalse {
 
     public void setTrueQuestion(boolean mTrueQuestion) {
         this.mTrueQuestion = mTrueQuestion;
+    }
+
+    public boolean isIsCheated() {
+        return mIsCheated;
+    }
+
+    public void setIsCheated(boolean mIsCheated) {
+        this.mIsCheated = mIsCheated;
     }
 }
